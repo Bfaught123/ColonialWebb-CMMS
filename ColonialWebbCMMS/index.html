@@ -15,8 +15,15 @@
       <header id="topbar"></header>
       <main class="page-container">
 
-<section class="page-heading"><div><h1>Maintenance Overview</h1><p class="page-subtitle">Facility health, work orders, upcoming maintenance, and inventory alerts.</p></div><div class="button-row"><a class="button button-outline" href="reports.html">View Reports</a><a class="button button-primary" href="work-orders.html?new=1">＋ New Work Order</a></div></section>
+<section class="page-heading"><div><h1>Maintenance Overview</h1><p class="page-subtitle">Calculated automatically from work orders, recorded time, part transactions, PMs and purchasing.</p></div><div class="button-row"><a class="button button-outline" href="reports.html">View Reports</a><a class="button button-primary" href="work-orders.html?new=1">＋ New Work Order</a></div></section>
 <section class="metrics" id="dashboard-metrics"></section>
+<section class="analytics-heading"><div><h2>Maintenance Cost & Performance</h2><p class="note">Costs use recorded part prices and configured hourly labor rates. Active timers count when stopped.</p></div>
+<label class="form-field analytics-range"><span>Reporting period</span><select id="dashboard-period"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select></label></section>
+<section class="metrics" id="dashboard-financial"></section>
+<section class="section-grid equal"><div class="card"><div class="section-head"><h2>Labor vs. Parts Cost</h2><span class="tiny text-muted">Costs recorded in selected period</span></div><div id="dashboard-cost-breakdown"></div></div>
+<div class="card"><div class="section-head"><h2>Highest-Cost Assets</h2><a href="reports.html" class="button-link">All analytics →</a></div><div id="dashboard-asset-costs"></div></div></section>
+<section class="table-card mb-20"><div class="table-header"><div><h2>Recent Cost & Downtime Entries</h2><p>Derived from labor entries, parts movements and recorded downtime</p></div></div>
+<div class="table-scroll"><table><thead><tr><th>Date</th><th>Work Order</th><th>Asset</th><th>Type</th><th>Hours</th><th>Cost</th></tr></thead><tbody id="dashboard-cost-events"></tbody></table></div></section>
 <section class="section-grid"><div class="card"><div class="section-head"><h2>Work Order Activity</h2><span class="text-muted tiny">Last 7 days</span></div><div id="activity-chart"></div></div><div class="card"><div class="section-head"><h2>Priority Work Orders</h2><a href="work-orders.html" class="button-link">View all →</a></div><div id="priority-list"></div></div></section>
 <section class="section-grid equal"><div class="card"><div class="section-head"><h2>Upcoming Preventive Maintenance</h2><a href="maintenance.html" class="button-link">All schedules →</a></div><div id="upcoming-pms"></div></div><div class="card"><div class="section-head"><h2>Low Stock Alerts</h2><a href="inventory.html" class="button-link">Inventory →</a></div><div id="inventory-alerts"></div></div></section>
 <section class="table-card"><div class="table-header"><div><h2>Recent Work Orders</h2><p>Latest maintenance requests</p></div><a class="button button-outline" href="work-orders.html">View All</a></div><div class="table-scroll"><table><thead><tr><th>Order</th><th>Description</th><th>Asset</th><th>Priority</th><th>Assigned To</th><th>Status</th></tr></thead><tbody id="recent-orders"></tbody></table></div></section>
@@ -28,7 +35,10 @@
 
   <!-- All scripts are local. No server, build tools or CDN needed. -->
   <script src="js/seed.js" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/data-client.js" defer></script>
   <script src="js/store.js" defer></script>
+  <script src="js/analytics.js" defer></script>
   <script src="js/app.js" defer></script>
   <script src="js/pages/dashboard.js" defer></script>
 </body>

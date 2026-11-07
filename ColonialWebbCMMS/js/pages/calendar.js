@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function () {
   let selectedDate = CW.today();
   const ymd = date => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
   const events = day => ({
-    work: CW.db.workOrders.filter(order => order.dueDate === day),
-    pm: CW.db.pmTasks.filter(item => item.nextDue === day)
+    work: CW.records('workOrders').filter(order => order.dueDate === day),
+    pm: CW.records('pmTasks').filter(item => item.nextDue === day)
   });
   function renderDay() {
     $('selected-date').textContent = CW.date(selectedDate);

@@ -187,3 +187,26 @@ td { font-size: 12px; }
 @media (max-width: 930px) { #sidebar { width: 208px; min-width: 208px; } .page-container { padding: 24px; } .section-grid,.section-grid.equal,.calendar-layout { grid-template-columns: 1fr; } }
 @media (max-width: 690px) { .app-shell { display: block; } #sidebar { width: 100%; min-width: 0; padding: 12px; } .brand { padding: 0 3px 12px; } .sidebar-label,.sidebar-bottom { display: none; } .sidebar-navigation { flex-direction: row; overflow-x: auto; } .nav-link { flex: 0 0 auto; padding: 9px 12px; font-size: 12px; } .nav-icon { display: none; } #topbar { padding: 10px 16px; min-height: 62px; } .user-switch span, .breadcrumb, .avatar { display: none; } .topbar-actions { margin-left: auto; gap: 8px; } .page-container { padding: 20px 14px; } .page-heading { flex-direction: column; align-items: stretch; } h1 { font-size: 23px; } .asset-grid { grid-template-columns: 1fr; } .calendar-day { min-height: 61px; padding: 6px; } .event-count { font-size: 9px; } .modal-body { grid-template-columns: 1fr; } }
 @media (max-width: 410px) { .metrics { gap: 9px; } .metric { padding: 13px; } .metric-value { font-size: 26px; } .metric-label { font-size: 10px; } .metric-icon { width: 32px; height: 32px; } .calendar-day { min-height: 55px; } .event-count { font-size: 0; width: 9px; height: 9px; padding: 0; border-radius: 50%; } }
+
+/* Role-based demo controls and management actions */
+[hidden] { display: none !important; }
+.notice-readonly { margin: 0 0 18px; padding: 13px 17px; background: var(--table-head); color: var(--muted); border: 1px solid var(--line); border-left: 4px solid var(--blue); border-radius: 8px; font-size: 12px; }
+.action-buttons { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; min-width: 155px; }
+.action-buttons .button { white-space: nowrap; }
+.workorder-parts { border: 1px solid var(--line); border-radius: 9px; padding: 12px; background: var(--table-head); }
+.workorder-parts h3 { margin: 0 0 6px; font-size: 13px; }
+.workorder-parts ul { margin: 8px 0 3px; padding-left: 17px; }
+.workorder-parts li { padding: 4px 0; }
+.role-explainer { margin-top: 10px; }
+
+/* Automated maintenance analytics */
+.analytics-heading { display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:28px 0 15px; }
+.analytics-heading h2 { margin:0 0 5px; }
+.analytics-heading p { margin:0; }
+.analytics-range { min-width:150px; }
+.analytics-range select { border:1px solid var(--line);background:var(--card);border-radius:8px;color:var(--text);padding:10px;min-height:39px; }
+.kpi-inline { display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0; }
+.kpi-inline span,.kpi-inline strong { background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px; }
+.timer-action { display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);padding:12px;border-radius:9px;margin:8px 0; }
+.timer-action strong { display:block;margin-bottom:3px; }
+@media (max-width:690px) { .analytics-range {width:100%;} .timer-action {flex-wrap:wrap;} }

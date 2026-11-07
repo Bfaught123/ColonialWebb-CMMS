@@ -18,7 +18,7 @@
 <section class="page-heading"><div><h1>Work Orders</h1><p class="page-subtitle">Create requests, assign technicians, record labor and track repairs.</p></div><div class="button-row"><button class="button button-outline" id="export-workorders">Export CSV</button><button class="button button-primary" id="new-workorder">＋ New Work Order</button></div></section>
 <section class="metrics" id="workorder-metrics"></section>
 <div class="toolbar"><input id="order-search" class="search" placeholder="Search number, description, equipment or technician" aria-label="Search work orders"><select id="order-status" class="filter"><option value="">All statuses</option><option>Open</option><option>In Progress</option><option>On Hold</option><option>Completed</option></select><select id="order-priority" class="filter"><option value="">All priorities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></div>
-<section class="table-card"><div class="table-header"><div><h2>Work Order Register</h2><p id="order-count"></p></div></div><div class="table-scroll"><table><thead><tr><th>Number</th><th>Description</th><th>Asset</th><th>Priority</th><th>Assigned</th><th>Due</th><th>Status</th><th>Action</th></tr></thead><tbody id="order-table"></tbody></table></div></section>
+<section class="table-card"><div class="table-header"><div><h2>Work Order Register</h2><p id="order-count"></p></div></div><div class="table-scroll"><table><thead><tr><th>Number</th><th>Description</th><th>Asset</th><th>Priority</th><th>Assigned</th><th>Due</th><th>Status</th><th>Labor</th><th>Parts</th><th>Total Cost</th><th>Action</th></tr></thead><tbody id="order-table"></tbody></table></div></section>
       </main>
     </div>
   </div>
@@ -27,7 +27,10 @@
 
   <!-- All scripts are local. No server, build tools or CDN needed. -->
   <script src="js/seed.js" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/data-client.js" defer></script>
   <script src="js/store.js" defer></script>
+  <script src="js/analytics.js" defer></script>
   <script src="js/app.js" defer></script>
   <script src="js/pages/work-orders.js" defer></script>
 </body>

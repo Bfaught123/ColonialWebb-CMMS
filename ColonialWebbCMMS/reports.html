@@ -15,8 +15,10 @@
       <header id="topbar"></header>
       <main class="page-container">
 
-<section class="page-heading"><div><h1>Reports & Analytics</h1><p class="page-subtitle">Live metrics from the data entered in this browser (no invented uptime numbers).</p></div><div class="button-row"><button class="button button-outline" id="report-export-wo">Export Work Orders</button><button class="button button-outline" id="report-export-inventory">Export Inventory</button></div></section>
-<section class="metrics" id="report-metrics"></section><section class="section-grid equal"><div class="card"><div class="section-head"><h2>Work Order Status Breakdown</h2></div><div id="status-progress"></div></div><div class="card"><div class="section-head"><h2>Inventory Health</h2></div><div id="inventory-progress"></div></div></section><section class="section-grid equal"><div class="card"><div class="section-head"><h2>Most Frequently Serviced Assets</h2></div><div id="asset-ranking"></div></div><div class="card"><div class="section-head"><h2>Maintenance Notes</h2></div><div class="note-box"><strong>Data limitations</strong><p class="note" style="margin:9px 0 0">Uptime and MTBF require actual equipment operating time and failure records. They are not estimated here. Labor and downtime totals use hours entered on work orders. Data stays in this browser until you add a backend.</p></div></div></section>
+<section class="page-heading"><div><h1>Reports & Analytics</h1><p class="page-subtitle">Auto-calculated costs, logged hours and asset performance from the same work orders and inventory used by the dashboard.</p></div><div class="button-row"><label class="form-field analytics-range"><span>Reporting period</span><select id="reports-period"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select></label><button class="button button-outline" id="report-export-costs">Export Cost Entries</button><button class="button button-outline" id="report-export-wo">Export Work Orders</button><button class="button button-outline" id="report-export-inventory">Export Inventory</button></div></section>
+<section class="metrics" id="report-metrics"></section><section class="section-grid equal"><div class="card"><div class="section-head"><h2>Work Order Status Breakdown</h2></div><div id="status-progress"></div></div><div class="card"><div class="section-head"><h2>Inventory Health</h2></div><div id="inventory-progress"></div></div></section><section class="section-grid equal"><div class="card"><div class="section-head"><h2>Most Frequently Serviced Assets</h2></div><div id="asset-ranking"></div></div><div class="card"><div class="section-head"><h2>Maintenance Notes</h2></div><div class="note-box"><strong>Data limitations</strong><p class="note" style="margin:9px 0 0">Uptime and MTBF require actual equipment operating time and failure records. They are not estimated here. Labor and downtime include tracked sessions plus manual entries. Manual hours from older records are attributed to the work order date; timers and movements have exact timestamps. Rates are configured estimates. Received purchasing costs are separate from repair costs. Data stays in this browser until the backend is connected.</p></div></div></section>
+<section class="table-card mb-20"><div class="table-header"><div><h2>Cost by Asset</h2><p>Labor + issued parts, net of returns, during the selected period</p></div></div><div class="table-scroll"><table><thead><tr><th>Asset</th><th>Work Orders Opened</th><th>Labor Cost</th><th>Parts Cost</th><th>Total Cost</th><th>Downtime Hours</th></tr></thead><tbody id="report-asset-costs"></tbody></table></div></section>
+<section class="table-card mb-20"><div class="table-header"><div><h2>Work Order Cost Ledger</h2><p>Lifetime cost for each work order, updated automatically as hours and parts are recorded</p></div></div><div class="table-scroll"><table><thead><tr><th>Work Order</th><th>Asset</th><th>Status</th><th>Labor Hours</th><th>Downtime</th><th>Labor Cost</th><th>Parts</th><th>Total</th></tr></thead><tbody id="report-order-costs"></tbody></table></div></section>
       </main>
     </div>
   </div>
@@ -25,7 +27,10 @@
 
   <!-- All scripts are local. No server, build tools or CDN needed. -->
   <script src="js/seed.js" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/data-client.js" defer></script>
   <script src="js/store.js" defer></script>
+  <script src="js/analytics.js" defer></script>
   <script src="js/app.js" defer></script>
   <script src="js/pages/reports.js" defer></script>
 </body>

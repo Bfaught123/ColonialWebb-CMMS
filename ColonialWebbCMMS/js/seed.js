@@ -15,13 +15,13 @@
 
   window.CW_SEED = function () {
     return {
-      settings: { company: 'ColonialWebb', facility: 'Main Facility', theme: 'light' },
+      settings: { company: 'ColonialWebb', facility: 'Main Facility', theme: 'light', defaultLaborRate: 40 },
       currentUserId: 'USR-001',
       team: [
-        { id: 'USR-001', name: 'Maintenance Admin', department: 'Maintenance', role: 'Administrator', email: 'admin@example.com', active: true },
-        { id: 'USR-002', name: 'Technician One', department: 'Maintenance', role: 'Technician', email: '', active: true },
-        { id: 'USR-003', name: 'Technician Two', department: 'Maintenance', role: 'Technician', email: '', active: true },
-        { id: 'USR-004', name: 'Operations User', department: 'Operations', role: 'Requestor', email: '', active: true }
+        { id: 'USR-001', name: 'Maintenance Admin', department: 'Maintenance', role: 'Admin', hourlyRate: 48, email: 'admin@example.com', active: true },
+        { id: 'USR-002', name: 'Technician One', department: 'Maintenance', role: 'Maintenance', hourlyRate: 40, email: '', active: true },
+        { id: 'USR-003', name: 'Technician Two', department: 'Maintenance', role: 'Maintenance', hourlyRate: 42, email: '', active: true },
+        { id: 'USR-004', name: 'Operations User', department: 'Operations', role: 'Operator', email: '', active: true }
       ],
       assets: [
         { id: 'AST-001', name: 'HGG ProCutter 1', category: 'CNC Pipe Cutting', location: 'Production Bay A', manufacturer: 'HGG', model: 'ProCutter', serial: 'DEMO-001', status: 'Needs Attention', criticality: 'High', hours: 4510, notes: 'Sample asset. Replace with your real information.' },
@@ -46,6 +46,9 @@
         { id: 'PM-304', title: 'Conveyor gearbox oil check', assetId: 'AST-005', assigneeId: 'USR-003', intervalDays: 14, nextDue: daysFromToday(-2), instructions: 'Inspect oil level and signs of leaks.', lastDone: '' }
       ],
       pmHistory: [],
+      laborEntries: [],
+      downtimeEntries: [],
+      activeTimers: [],
       parts: [
         { id: 'PART-001', number: 'BRG-6205', name: '6205 Motor Bearing', manufacturer: 'SKF', manufacturerNumber: '6205-2RS', category: 'Bearings', locker: '01', bin: 'A-02', quantity: 12, minimum: 5, maximum: 25, unitCost: 14.5, supplier: 'Industrial Supply', compatibleAssetIds: ['AST-005'], notes: '' },
         { id: 'PART-002', number: 'SNS-204', name: 'Inductive Proximity Sensor', manufacturer: 'Omron', manufacturerNumber: 'E2E-X5ME1', category: 'Electrical', locker: '02', bin: 'B-04', quantity: 3, minimum: 5, maximum: 15, unitCost: 45, supplier: 'Controls Supply', compatibleAssetIds: ['AST-006', 'AST-001'], notes: '' },
@@ -60,6 +63,7 @@
       purchaseRequests: [
         { id: 'PR-101', partId: 'PART-002', partNumber: 'SNS-204', description: 'Proximity sensor restock', quantity: 10, unitCost: 45, supplier: 'Controls Supply', requestedBy: 'Maintenance Admin', status: 'Requested', requestedAt: daysFromToday(-1), receivedAt: '' }
       ],
+      deletedRecords: [],
       activity: [
         { id: 'LOG-001', date: new Date().toISOString(), message: 'Demo CMMS initialized with example data.' }
       ]

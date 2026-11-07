@@ -15,8 +15,8 @@
       <header id="topbar"></header>
       <main class="page-container">
 
-<section class="page-heading"><div><h1>Team Management</h1><p class="page-subtitle">Create demo technician profiles and maintain staff information.</p></div><button class="button button-primary" id="new-member">＋ Add Team Member</button></section>
-<section class="metrics" id="team-metrics"></section><section class="table-card"><div class="table-header"><div><h2>Facility Personnel</h2><p>Use the “Acting as” control at the top to test inventory transactions as different technicians.</p></div></div><div class="table-scroll"><table><thead><tr><th>Employee</th><th>Department</th><th>Role</th><th>Email</th><th>Status</th><th>Action</th></tr></thead><tbody id="team-table"></tbody></table></div></section><div class="note-box"><strong>Demo only:</strong> Changing the acting technician is not a login. Real authentication and role permissions will require a backend.</div>
+<section class="page-heading"><div><h1>Team Management</h1><p class="page-subtitle">Admin-managed access profiles for Operator, Maintenance and Admin.</p></div><button class="button button-primary" id="new-member">＋ Add User</button></section>
+<section class="metrics" id="team-metrics"></section><section class="table-card"><div class="table-header"><div><h2>Facility Personnel</h2><p>Switch demo users at the top to preview each permission level.</p></div></div><div class="table-scroll"><table><thead><tr><th>Employee</th><th>Department</th><th>Role</th><th>Email</th><th>Labor Rate</th><th>Status</th><th>Action</th></tr></thead><tbody id="team-table"></tbody></table></div></section><div class="note-box"><strong>Demo only:</strong> Changing the acting technician is not a login. Real authentication and role permissions will require a backend.</div>
       </main>
     </div>
   </div>
@@ -25,7 +25,10 @@
 
   <!-- All scripts are local. No server, build tools or CDN needed. -->
   <script src="js/seed.js" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/data-client.js" defer></script>
   <script src="js/store.js" defer></script>
+  <script src="js/analytics.js" defer></script>
   <script src="js/app.js" defer></script>
   <script src="js/pages/team.js" defer></script>
 </body>

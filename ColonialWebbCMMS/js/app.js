@@ -44,17 +44,19 @@
     clearTimeout(CW.toastTimer);
     CW.toastTimer = setTimeout(() => node.className = 'toast', 3500);
   };
-  CW.modal = function (title, content, onSave, buttonText) {
+  CW.modal = function (title, content, onSave, buttonText, config = {}) {
     const root = document.getElementById('modal-root');
     root.innerHTML = '<div class="modal-backdrop" id="modal-backdrop"><div class="modal-card" role="dialog" aria-modal="true" aria-label="' + CW.escape(title) + '">' +
       '<div class="modal-heading"><h2>' + CW.escape(title) + '</h2><button type="button" class="icon-button" id="close-modal" aria-label="Close">✕</button></div>' +
-      '<form id="modal-form"><div class="modal-body">' + content + '</div><div class="modal-footer"><button type="button" id="cancel-modal" class="button button-outline">Cancel</button><button class="button button-primary" type="submit">' + CW.escape(buttonText || 'Save Changes') + '</button></div></form></div></div>';
+      '<form id="modal-form"><div class="modal-body">' + content + '</div><div class="modal-footer"><button type="button" id="cancel-modal" class="button button-outline">' + (config.readOnly ? 'Close' : 'Cancel') + '</button>' + (config.readOnly ? '' : '<button class="button button-primary" type="submit">' + CW.escape(buttonText || 'Save Changes') + '</button>') + '</div></form></div></div>';
     const close = () => root.innerHTML = '';
     document.getElementById('close-modal').onclick = close;
     document.getElementById('cancel-modal').onclick = close;
     document.getElementById('modal-backdrop').onclick = event => { if (event.target.id === 'modal-backdrop') close(); };
+    if (config.readOnly) root.querySelectorAll('#modal-form input, #modal-form textarea, #modal-form select').forEach(el => el.disabled = true);
     document.getElementById('modal-form').onsubmit = event => {
       event.preventDefault();
+      if (config.readOnly) return;
       const data = Object.fromEntries(new FormData(event.currentTarget).entries());
       const success = onSave(data, event.currentTarget);
       if (success !== false) close();
@@ -83,10 +85,13 @@
   };
   CW.metric = (label, value, foot, icon, color) =>
     '<article class="card metric"><div class="metric-head"><span class="metric-label">' + CW.escape(label) + '</span><span class="metric-icon ' + (color || '') + '">' + (icon || '▤') + '</span></div><div class="metric-value">' + CW.escape(value) + '</div><div class="metric-foot">' + CW.escape(foot || '') + '</div></article>';
-  CW.userOptions = selected => CW.options(CW.db.team.filter(person => person.active), selected, 'id', 'name', 'Unassigned');
-  CW.assetOptions = selected => CW.options(CW.db.assets, selected, 'id', 'name', 'No asset selected');
+  CW.userOptions = selected => CW.options(CW.records('team').filter(person => person.active && person.role !== 'Operator'), selected, 'id', 'name', 'Unassigned');
+  CW.assetOptions = selected => CW.options(CW.records('assets'), selected, 'id', 'name', 'No asset selected');
   CW.empty = message => '<div class="empty-state"><div class="empty-icon">▤</div><h3>No records found</h3><p>' + CW.escape(message || 'Try changing your search or filters.') + '</p></div>';
   CW.confirm = message => window.confirm(message);
+  CW.deleteButton = (collection, id) => CW.can('delete') ? '<button type="button" class="button button-small button-danger" data-delete="' + CW.escape(id) + '" aria-label="Delete record">Delete</button>' : '';
+  CW.setVisible = (id, permission) => { const el = document.getElementById(id); if (el) el.hidden = !CW.can(permission); };
+  CW.readOnlyNotice = () => CW.role() === 'Operator' ? '<div class="notice-readonly">Operator access: you can submit new work order tickets. Other records are read-only.</div>' : ''; 
 
   function initializeShell() {
     const page = document.body.dataset.page || 'dashboard';
@@ -101,8 +106,10 @@
       '</nav><div class="sidebar-bottom"><span class="sidebar-status-dot"></span> FRONTEND DEMO <small>No server connected</small></div>';
     document.getElementById('topbar').innerHTML =
       '<div class="breadcrumb">' + CW.escape(company) + ' <span>/</span> ' + CW.escape(CW.db.settings.facility || 'Main Facility') + '</div>' +
-      '<div class="topbar-actions"><span class="demo-pill">● Demo Mode</span><label class="user-switch"><span>Acting as</span><select id="user-switch" aria-label="Demo technician">' +
-      CW.options(CW.db.team.filter(member => member.active), activeUser.id) + '</select></label><div class="avatar">' + CW.escape(activeUser.name.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase()) + '</div></div>';
+      '<div class="topbar-actions"><span class="demo-pill">● Demo · ' + CW.escape(CW.role()) + '</span><label class="user-switch"><span>Acting as</span><select id="user-switch" aria-label="Demo role / user">' +
+      CW.options(CW.records('team').filter(member => member.active), activeUser.id) + '</select></label><div class="avatar">' + CW.escape(activeUser.name.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase()) + '</div></div>';
+    const main = document.querySelector('.page-container');
+    if (main && CW.role() === 'Operator') main.insertAdjacentHTML('afterbegin', CW.readOnlyNotice());
     const switcher = document.getElementById('user-switch');
     switcher.addEventListener('change', event => {
       CW.db.currentUserId = event.target.value; CW.save(); location.reload();

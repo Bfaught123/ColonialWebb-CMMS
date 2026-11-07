@@ -16,27 +16,17 @@ document.addEventListener('DOMContentLoaded', function () {
     return part.number + ' — ' + part.name + ' (Locker ' + part.locker + ', Bin ' + part.bin + '; Qty ' + part.quantity + ')';
   }
   function partOptions(selected) {
-    return CW.options(CW.db.parts.map(part => ({ id: part.id, name: partLabel(part) })), selected, 'id', 'name');
+    return CW.options(CW.records('parts').map(part => ({ id: part.id, name: partLabel(part) })), selected, 'id', 'name');
   }
   function location(part) { return part.locker + ' / ' + part.bin; }
-  function recordTransaction(type, part, quantity, from, to, note, workOrderId) {
-    CW.db.transactions.unshift({
-      id: CW.nextId(CW.db.transactions, 'TX'),
-      date: CW.isoNow(),
-      type, partId: part.id, partNumber: part.number,
-      quantity: Number(quantity), from, to,
-      technician: CW.currentUser().name,
-      workOrderId: workOrderId || '', note: note || ''
-    });
-  }
 
   function render() {
-    const parts = CW.db.parts;
+    const parts = CW.records('parts');
     const alerts = parts.filter(part => CW.partStatus(part) !== 'In Stock');
     const value = parts.reduce((sum, part) => sum + CW.partValue(part), 0);
     const numberOfItems = new Set(parts.map(part => part.number.toLowerCase())).size;
     const units = parts.reduce((sum, part) => sum + Number(part.quantity), 0);
-    const onOrder = CW.db.purchaseRequests.filter(req => !['Received', 'Cancelled'].includes(req.status)).reduce((sum, req) => sum + Number(req.quantity), 0);
+    const onOrder = CW.records('purchaseRequests').filter(req => !['Received', 'Cancelled'].includes(req.status)).reduce((sum, req) => sum + Number(req.quantity), 0);
     $('inventory-metrics').innerHTML =
       CW.metric('Unique Part Numbers', numberOfItems, parts.length + ' stocked locations', '▣') +
       CW.metric('Inventory Value', CW.money(value), CW.number(units) + ' total units', '$', 'green') +
@@ -64,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <td class="cell-title">${CW.number(part.quantity)}</td><td>${CW.number(part.minimum)}</td>
       <td>${CW.money(part.unitCost)}</td><td>${CW.money(CW.partValue(part))}</td>
       <td>${CW.statusBadge(CW.partStatus(part))}</td>
-      <td><button class="button-link" data-detail="${CW.escape(part.id)}">View / Edit</button></td>
+      <td><div class="action-buttons"><button class="button-link" data-detail="${CW.escape(part.id)}">${CW.can('write') ? 'View / Edit' : 'View'}</button>${CW.deleteButton('parts', part.id)}</div></td>
     </tr>`).join('') || '<tr><td colspan="11">No inventory matches your filters.</td></tr>';
 
     $('transaction-table').innerHTML = CW.db.transactions.map(tx => `<tr>
@@ -77,7 +67,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* Edit or add a stocked location. No direct quantity edit on existing rows. */
   function openPartForm(id) {
-    const existing = id ? CW.find('parts', id) : null;
+    if (!id && !CW.require('write')) return;
+    const existing = id ? CW.active('parts', id) : null;
+    if (id && !existing) return;
     const part = existing || {
       number: '', name: '', manufacturer: '', manufacturerNumber: '', category: 'Other', locker: '', bin: '',
       quantity: 0, minimum: 0, maximum: 0, unitCost: 0, supplier: '', compatibleAssetIds: [], notes: ''
@@ -99,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
       '<div class="full">' + CW.field('Compatible Asset IDs (comma separated)', 'compatibleAssets', currentAssets) + '</div>' +
       '<div class="full">' + CW.field('Notes', 'notes', part.notes, 'textarea') + '</div>',
       data => {
+        if (!CW.require('write')) return false;
         data.number = data.number.trim(); data.name = data.name.trim();
         data.locker = data.locker.trim(); data.bin = data.bin.trim();
         const initial = Number(data.initialQty || 0);
@@ -107,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ![initial, Number(data.minimum), Number(data.maximum)].every(Number.isInteger)) {
           CW.toast('Enter valid part, location, and nonnegative stock numbers.', 'danger'); return false;
         }
-        const conflicting = CW.db.parts.find(other => other.id !== id &&
+        const conflicting = CW.records('parts').find(other => other.id !== id &&
           other.number.toLowerCase() === data.number.toLowerCase() &&
           other.locker.toLowerCase() === data.locker.toLowerCase() && other.bin.toLowerCase() === data.bin.toLowerCase());
         if (conflicting) { CW.toast('This part already exists in that locker/bin. Receive stock into its existing location.', 'danger'); return false; }
@@ -120,17 +113,18 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         if (existing) Object.assign(existing, newValues);
         else {
-          const created = Object.assign({ id: CW.nextId(CW.db.parts, 'PART'), quantity: initial }, newValues);
+          const created = Object.assign({ id: CW.nextId(CW.db.parts, 'PART'), quantity: 0 }, newValues);
           CW.db.parts.push(created);
-          if (initial > 0) recordTransaction('Receive', created, initial, 'Initial Stock', location(created), 'Initial stock when part created', '');
+          if (initial > 0) CW.moveStock({ type: 'Receive', partId: created.id, quantity: initial, note: 'Initial stock when part created' });
         }
         CW.log((existing ? 'Edited part ' : 'Added part ') + data.number + ' at ' + data.locker + '/' + data.bin);
         render(); CW.toast('Inventory record saved.');
-      }, existing ? 'Save Part Details' : 'Add Part');
+      }, existing ? 'Save Part Details' : 'Add Part', { readOnly: !CW.can('write') });
   }
 
   function openTransaction(type, selectedPartId) {
-    if (!CW.db.parts.length) { CW.toast('Create a part first.', 'danger'); return; }
+    if (!CW.require('write')) return;
+    if (!CW.records('parts').length) { CW.toast('Create a part first.', 'danger'); return; }
     const extra = type === 'Transfer'
       ? CW.field('Destination Locker *', 'targetLocker', '', 'text', 'required') + CW.field('Destination Bin *', 'targetBin', '', 'text', 'required')
       : '';
@@ -138,55 +132,35 @@ document.addEventListener('DOMContentLoaded', function () {
       ? CW.field('New Physical Quantity *', 'quantity', '', 'number', 'required min="0" step="1"')
       : CW.field('Quantity *', 'quantity', 1, 'number', 'required min="1" step="1"');
     const form = CW.select('Part / Locker / Bin', 'partId', partOptions(selectedPartId)) + quantityField + extra +
-      (['Issue', 'Return'].includes(type) ? CW.select('Related Work Order (optional)', 'workOrderId', CW.options(CW.db.workOrders, '', 'id', 'id', 'No work order')) : '') +
+      (['Issue', 'Return'].includes(type) ? CW.select('Related Work Order (optional)', 'workOrderId', CW.options(CW.records('workOrders'), '', 'id', 'id', 'No work order')) : '') +
       '<div class="full">' + CW.field('Reason / Notes', 'note', '', 'textarea') + '</div>';
     CW.modal(type + ' Inventory', form, data => {
-      const part = CW.find('parts', data.partId);
-      const quantity = Number(data.quantity);
-      if (!part || !Number.isInteger(quantity) || quantity < (type === 'Adjust' ? 0 : 1)) {
-        CW.toast('Enter a whole, valid quantity.', 'danger'); return false;
-      }
-      const current = Number(part.quantity);
-      let change = quantity;
-      if (type === 'Issue' || type === 'Transfer') change = -quantity;
-      if (type === 'Adjust') change = quantity - current;
-      if (current + change < 0) { CW.toast('Not enough stock in that locker and bin.', 'danger'); return false; }
-      const before = location(part);
-      if (type === 'Transfer') {
-        const locker = data.targetLocker.trim(); const bin = data.targetBin.trim();
-        if (!locker || !bin) { CW.toast('Select destination locker and bin.', 'danger'); return false; }
-        if (locker.toLowerCase() === part.locker.toLowerCase() && bin.toLowerCase() === part.bin.toLowerCase()) {
-          CW.toast('Choose a different destination.', 'danger'); return false;
-        }
-        let target = CW.db.parts.find(p => p.number.toLowerCase() === part.number.toLowerCase() &&
-          p.locker.toLowerCase() === locker.toLowerCase() && p.bin.toLowerCase() === bin.toLowerCase());
-        if (!target) {
-          target = Object.assign({}, part, { id: CW.nextId(CW.db.parts, 'PART'), locker, bin, quantity: 0, minimum: 0, maximum: 0 });
-          CW.db.parts.push(target);
-        }
-        target.quantity = Number(target.quantity) + quantity;
-        part.quantity = current - quantity;
-        recordTransaction(type, part, quantity, before, location(target), data.note.trim(), '');
-      } else {
-        part.quantity = current + change;
-        const from = ['Issue'].includes(type) ? before : type === 'Adjust' ? before + ' (count ' + current + ')' : 'Outside Inventory';
-        const to = type === 'Issue' ? 'Used / Removed' : before;
-        recordTransaction(type, part, type === 'Adjust' ? change : quantity, from, to, data.note.trim(), data.workOrderId || '');
-      }
-      CW.log(type + ' ' + quantity + ' ' + part.number + ' by ' + CW.currentUser().name);
+      const result = CW.moveStock({
+        type, partId: data.partId, quantity: data.quantity,
+        workOrderId: data.workOrderId || '', note: data.note || '',
+        targetLocker: data.targetLocker || '', targetBin: data.targetBin || ''
+      });
+      if (!result.ok) { if (result.error) CW.toast(result.error, 'danger'); return false; }
       render(); CW.toast(type + ' transaction saved.');
     }, type === 'Adjust' ? 'Save Adjustment' : type + ' Parts');
   }
 
+  CW.setVisible('add-part', 'write');
+  document.querySelectorAll('[data-tx]').forEach(button => { button.hidden = !CW.can('write'); });
   $('add-part').onclick = () => openPartForm();
   document.querySelectorAll('[data-tx]').forEach(button => { button.onclick = () => openTransaction(button.dataset.tx); });
   $('inventory-search').oninput = render;
   $('inventory-stock').onchange = render;
   $('inventory-locker').onchange = render;
-  $('inventory-table').onclick = event => { const btn = event.target.closest('[data-detail]'); if (btn) openPartForm(btn.dataset.detail); };
+  $('inventory-table').onclick = event => {
+    const del = event.target.closest('[data-delete]');
+    const btn = event.target.closest('[data-detail]');
+    if (del && CW.deleteRecord('parts', del.dataset.delete)) render();
+    else if (btn) openPartForm(btn.dataset.detail);
+  };
   $('export-inventory').onclick = () => CW.exportCSV('inventory.csv',
     ['Part Number', 'Description', 'Manufacturer', 'Manufacturer Part Number', 'Category', 'Locker', 'Bin', 'Quantity', 'Minimum', 'Maximum', 'Unit Cost', 'Total Value', 'Supplier'],
-    CW.db.parts.map(p => [p.number, p.name, p.manufacturer, p.manufacturerNumber, p.category, p.locker, p.bin, p.quantity, p.minimum, p.maximum, p.unitCost, CW.partValue(p), p.supplier]));
+    CW.records('parts').map(p => [p.number, p.name, p.manufacturer, p.manufacturerNumber, p.category, p.locker, p.bin, p.quantity, p.minimum, p.maximum, p.unitCost, CW.partValue(p), p.supplier]));
   $('export-transactions').onclick = () => CW.exportCSV('inventory-transactions.csv',
     ['Date', 'Type', 'Part Number', 'Quantity', 'From', 'To', 'Technician', 'Work Order', 'Notes'],
     CW.db.transactions.map(t => [t.date, t.type, t.partNumber, t.quantity, t.from, t.to, t.technician, t.workOrderId, t.note]));
